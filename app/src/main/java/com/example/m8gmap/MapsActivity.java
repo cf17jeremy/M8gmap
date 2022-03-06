@@ -25,6 +25,14 @@ import com.example.m8gmap.databinding.ActivityMapsBinding;
 import java.util.List;
 import java.util.Locale;
 
+import model.ApiCall;
+import model.ModelApi;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class MapsActivity extends FragmentActivity
         implements
         OnMapReadyCallback,
@@ -62,7 +70,6 @@ public class MapsActivity extends FragmentActivity
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(-34, 151);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
@@ -75,6 +82,30 @@ public class MapsActivity extends FragmentActivity
                 getAddress(latLng.latitude, latLng.longitude);
                 mMap.addMarker(new MarkerOptions().position(latLng).title(getAddress(latLng.latitude, latLng.longitude))).showInfoWindow();
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                Retrofit retrofit = new Retrofit.Builder()
+                        .baseUrl("https://api.sunrise-sunset.org/")
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+                ApiCall apiCall = retrofit.create(ApiCall.class);
+                String lat = Double.toString(latLng.latitude);
+                String lng = Double.toString(latLng.longitude);
+                Call<ModelApi> call = apiCall.getData(lat, lng);
+                call.enqueue(new Callback<ModelApi>(){
+                    @Override
+                    public void onResponse(Call<ModelApi> call, Response<ModelApi> response) {
+                        if(response.code()!=200){
+                            Log.i("testApi", "checkConnection");
+                            return;
+                        }
+
+                        Log.i("testApi", response.body().getStatus() + " - " + response.body().getResults().getSunrise());
+                    }
+
+                    @Override
+                    public void onFailure(Call<ModelApi> call, Throwable t) {
+
+                    }
+                });
             }
         });
     }
