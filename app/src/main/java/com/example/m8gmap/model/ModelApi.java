@@ -1,4 +1,4 @@
-package model;
+package com.example.m8gmap.model;
 
 public class ModelApi {
     public ModelResults results;

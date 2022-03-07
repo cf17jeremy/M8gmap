@@ -16,29 +16,43 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class ApiThread extends AsyncTask<LatLng,Void,String> {
+public class ApiThread extends AsyncTask<Void,Void,String> {
+    private double latitude;
+    private double longitude;
+
+    public ApiThread(double latitude, double longitude) {
+        latitude = this.latitude;
+        longitude = this.longitude;
+    }
 
     @Override
-    protected String doInBackground(LatLng... latLngs) {
+    protected String doInBackground(Void... voids) {
         try {
-            URL url = new URL("https://api.sunrise-sunset.org/json?lat=36.7201600&lng=-4.4203400");
+            URL url = new URL("https://api.sunrise-sunset.org/json?lat="+ latitude +"&lng=" + longitude);
             HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
             InputStream inputStream = httpURLConnection.getInputStream();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
             String data = bufferedReader.readLine();
             return data;
         } catch (MalformedURLException e) {
-            return e.toString();
+             e.toString();
         } catch (IOException e) {
-            return e.toString();
+             e.toString();
         }
+        return null;
     }
 
     @Override
-    protected void onPostExecute(String... data) throws JSONException {
-        JSONObject jObject = new JSONObject(data);
-        jObject = jObject.getJSONObject("results");
-        String sunrise = jObject.getString("sunrise");
-        Log.i("logtest", "------>" + sunrise);
+    protected void onPostExecute(String data) {
+        JSONObject jObject = null;
+        try {
+            jObject = new JSONObject(String.valueOf(data));
+            jObject = jObject.getJSONObject("results");
+            String sunrise = jObject.getString("sunrise");
+            Log.i("logtest", "------>" + sunrise);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 }

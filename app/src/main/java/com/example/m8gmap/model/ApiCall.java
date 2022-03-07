@@ -1,4 +1,4 @@
-package model;
+package com.example.m8gmap.model;
 
 import retrofit2.Call;
 import retrofit2.http.GET;

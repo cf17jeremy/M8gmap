@@ -25,8 +25,8 @@ import com.example.m8gmap.databinding.ActivityMapsBinding;
 import java.util.List;
 import java.util.Locale;
 
-import model.ApiCall;
-import model.ModelApi;
+import com.example.m8gmap.model.ApiCall;
+import com.example.m8gmap.model.ModelApi;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -86,6 +86,8 @@ public class MapsActivity extends FragmentActivity
                         .baseUrl("https://api.sunrise-sunset.org/")
                         .addConverterFactory(GsonConverterFactory.create())
                         .build();
+                ApiThread process = new ApiThread(latLng.latitude, latLng.longitude);
+                process.execute();
                 ApiCall apiCall = retrofit.create(ApiCall.class);
                 String lat = Double.toString(latLng.latitude);
                 String lng = Double.toString(latLng.longitude);
@@ -99,6 +101,7 @@ public class MapsActivity extends FragmentActivity
                         }
 
                         Log.i("testApi", response.body().getStatus() + " - " + response.body().getResults().getSunrise());
+                        Log.i("testApi", response.body().getStatus() + " - " + response.body().getResults().getSunset());
                     }
 
                     @Override
