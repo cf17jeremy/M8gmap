@@ -1,14 +1,21 @@
 package com.example.m8gmap.modelFlickr;
 
 public class ModelPhoto {
-    public int id,server,farm,ispublic,isfriend,isfamily;
-    public String owner,secret,title;
+    public String id;
+    public String owner;
+    public String secret;
+    public String server;
+    public int farm;
+    public String title;
+    public int ispublic;
+    public int isfriend;
+    public int isfamily;
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public int getServer() {
+    public String getServer() {
         return server;
     }
 

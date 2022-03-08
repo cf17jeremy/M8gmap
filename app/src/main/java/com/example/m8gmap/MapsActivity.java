@@ -14,6 +14,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.m8gmap.modelFlickr.ApiCallFlickr;
+import com.example.m8gmap.modelFlickr.ModelApiFlickr;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -22,6 +24,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.m8gmap.databinding.ActivityMapsBinding;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -82,17 +85,15 @@ public class MapsActivity extends FragmentActivity
                 getAddress(latLng.latitude, latLng.longitude);
                 mMap.addMarker(new MarkerOptions().position(latLng).title(getAddress(latLng.latitude, latLng.longitude))).showInfoWindow();
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-                Retrofit retrofit = new Retrofit.Builder()
-                        .baseUrl("https://api.sunrise-sunset.org/")
-                        .addConverterFactory(GsonConverterFactory.create())
-                        .build();
                 ApiThread process = new ApiThread(latLng.latitude, latLng.longitude);
                 process.execute();
-                ApiCall apiCall = retrofit.create(ApiCall.class);
                 String lat = Double.toString(latLng.latitude);
                 String lng = Double.toString(latLng.longitude);
-                Call<ModelApi> call = apiCall.getData(lat, lng);
-                call.enqueue(new Callback<ModelApi>(){
+
+                //Aqui declarem el retrofit de sunrise i l'utilitzem
+                ApiCall sunriseapi = getApiCallSun("https://api.sunrise-sunset.org/");
+                Call<ModelApi> callsun = sunriseapi.getData(lat, lng);
+                callsun.enqueue(new Callback<ModelApi>(){
                     @Override
                     public void onResponse(Call<ModelApi> call, Response<ModelApi> response) {
                         if(response.code()!=200){
@@ -107,6 +108,30 @@ public class MapsActivity extends FragmentActivity
                     @Override
                     public void onFailure(Call<ModelApi> call, Throwable t) {
 
+                    }
+                });
+
+                //Aqui declarem el retrofit de flickr i l'utilizem
+                String api_key = "79d466885188b99d6762980d64029892";
+                ApiCallFlickr flickrapi = getApiCallFlickr("https://www.flickr.com/");
+                Call<ModelApiFlickr> callflickr = flickrapi.getData("flickr.photos.search",api_key, lat, lng, "5","json");
+                callflickr.enqueue(new Callback<ModelApiFlickr>() {
+                    @Override
+                    public void onResponse(Call<ModelApiFlickr> call, Response<ModelApiFlickr> response) {
+                        Log.i("testApiFlickr", response.toString());
+                        if (response.code() != 200) {
+                            Log.i("testApiFlickr", response.toString());
+                            return;
+                        }
+                        for (int i=0; i<5; i++) {
+                            ArrayList<String> urls = CreateUrlImg(response.body().getPhotos().getPhoto().get(i).getServer(), response.body().getPhotos().getPhoto().get(i).getId(), response.body().getPhotos().getPhoto().get(i).getSecret());
+                            Log.i("testApiFlickr", response.body().getStat() + " - " + urls.get(i));
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ModelApiFlickr> call, Throwable t) {
+                        Log.i("testApiFlickr", call.toString() + t.toString());
                     }
                 });
             }
@@ -151,6 +176,31 @@ public class MapsActivity extends FragmentActivity
             showMissingPermissionError();
             permissionDenied = false;
         }
+    }
+
+
+    private ArrayList<String> CreateUrlImg(String serverid, String id, String secret){
+        String base = "https://live.staticflickr.com/";
+        String composedurl = base + serverid + "/" + id + "_" + secret + ".jpg";
+        ArrayList<String> urls = new ArrayList<>();
+        urls.add(composedurl);
+        return urls;
+    }
+
+    private ApiCall getApiCallSun(String url) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(url)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        return retrofit.create(ApiCall.class);
+    }
+
+    private ApiCallFlickr getApiCallFlickr(String url) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(url)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        return retrofit.create(ApiCallFlickr.class);
     }
 
     private void showMissingPermissionError() {

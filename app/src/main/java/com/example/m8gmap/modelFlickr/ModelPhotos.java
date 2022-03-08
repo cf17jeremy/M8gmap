@@ -1,8 +1,14 @@
 package com.example.m8gmap.modelFlickr;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ModelPhotos {
-    public int page,pages,perpage,total;
-    public ModelPhoto photo;
+    private int page;
+    private int pages;
+    private int perpage;
+    private String total;
+    private List<ModelPhoto> photo = new ArrayList<ModelPhoto>();
 
     public int getPage() {
         return page;
@@ -16,11 +22,11 @@ public class ModelPhotos {
         return perpage;
     }
 
-    public int getTotal() {
+    public String getTotal() {
         return total;
     }
 
-    public ModelPhoto getPhoto() {
+    public List<ModelPhoto> getPhoto() {
         return photo;
     }
 }
